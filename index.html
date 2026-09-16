@@ -815,13 +815,24 @@
             min-height: 18px;
         }
 
-            #cf-status.ok {
-                color: #7FC490;
-            }
+        #contact-form input.field-invalid, #contact-form textarea.field-invalid, .cf-phone-wrap.field-invalid {
+            border-color: #D9695A !important;
+        }
 
-            #cf-status.err {
-                color: #E8A582;
-            }
+        .cf-field-msg {
+            font-size: 12px;
+            color: #E8A582;
+            margin: -6px 0 8px;
+            min-height: 14px;
+        }
+
+        #cf-status.ok {
+            color: #7FC490;
+        }
+
+        #cf-status.err {
+            color: #E8A582;
+        }
 
         #progress {
             position: fixed;
@@ -1717,6 +1728,29 @@
             };
 
             var cform = document.getElementById('contact-form');
+
+            if (cform) {
+                var requiredFields = cform.querySelectorAll('input[required], textarea[required]');
+                requiredFields.forEach(function (field) {
+                    var wrap = field.closest('.cf-phone-wrap');
+                    var target = wrap || field;
+                    field.addEventListener('blur', function () {
+                        if (field.value !== '' || field.hasAttribute('required')) {
+                            if (!field.validity.valid) {
+                                target.classList.add('field-invalid');
+                                field.reportValidity();
+                            } else {
+                                target.classList.remove('field-invalid');
+                            }
+                        }
+                    });
+                    field.addEventListener('input', function () {
+                        if (field.validity.valid) {
+                            target.classList.remove('field-invalid');
+                        }
+                    });
+                });
+            }
             var cfPhone = document.getElementById('cf-phone');
             var cfPhoneHidden = document.getElementById('cf-phone-hidden');
             if (cfPhone) {
