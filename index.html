@@ -764,13 +764,50 @@
                 gap: 10px;
             }
 
-                #contact-form .cf-row input {
+                #contact-form .cf-row > input, #contact-form .cf-row > .cf-phone-wrap {
                     flex: 1;
                 }
 
-            #contact-form textarea {
-                resize: vertical;
+        .cf-phone-wrap {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--line-dark);
+            margin-bottom: 10px;
+            padding: 0 14px;
+        }
+
+            .cf-phone-wrap:focus-within {
+                border-color: var(--oxide);
+                background: rgba(255,255,255,0.1);
             }
+
+        .cf-phone-prefix {
+            color: #B8C0BA;
+            font-size: 14px;
+            padding-right: 8px;
+            border-right: 1px solid var(--line-dark);
+            margin-right: 8px;
+        }
+
+        .cf-phone-wrap input {
+            border: none !important;
+            background: transparent !important;
+            padding: 12px 0 !important;
+            margin-bottom: 0 !important;
+            flex: 1;
+            font-family: 'IBM Plex Sans',sans-serif;
+            font-size: 14px;
+            color: var(--white);
+        }
+
+            .cf-phone-wrap input:focus {
+                outline: none;
+            }
+
+        #contact-form textarea {
+            resize: vertical;
+        }
 
         #cf-status {
             font-size: 13px;
@@ -1551,10 +1588,14 @@
                     <h2>Get in touch about a project.</h2>
                     <form id="contact-form" action="https://script.google.com/macros/s/AKfycbyTcZKwkxkf8vOusr6-qN38b0pXrEtt8TL4FowSBtU8B9lXMb7aNYxzf0LJk0o1sneygA/exec" method="POST">
                         <input type="text" name="name" placeholder="Your name" required>
-                        <input type="text" name="company" placeholder="Company (optional)">
+                        <input type="text" name="company" placeholder="Company" required>
                         <div class="cf-row">
-                            <input type="email" name="email" placeholder="Email" required>
-                            <input type="tel" name="phone" placeholder="Phone">
+                            <input type="email" name="email" placeholder="Email" required pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" title="Enter a valid email address (e.g. name@company.com)">
+                            <div class="cf-phone-wrap">
+                                <span class="cf-phone-prefix">+91</span>
+                                <input type="tel" id="cf-phone" placeholder="98765 43210" required inputmode="numeric" maxlength="11" title="Enter a valid 10-digit Indian mobile number">
+                            </div>
+                            <input type="hidden" name="phone" id="cf-phone-hidden">
                         </div>
                         <textarea name="message" placeholder="Tell us about your project" rows="4" required></textarea>
                         <button type="submit" class="btn">Send message</button>
@@ -1676,6 +1717,21 @@
             };
 
             var cform = document.getElementById('contact-form');
+            var cfPhone = document.getElementById('cf-phone');
+            var cfPhoneHidden = document.getElementById('cf-phone-hidden');
+            if (cfPhone) {
+                cfPhone.addEventListener('input', function () {
+                    var digits = cfPhone.value.replace(/\D/g, '').slice(0, 10);
+                    var formatted = digits.length > 5 ? digits.slice(0, 5) + ' ' + digits.slice(5) : digits;
+                    cfPhone.value = formatted;
+                    if (cfPhoneHidden) { cfPhoneHidden.value = digits.length === 10 ? ('+91' + digits) : ''; }
+                    if (digits.length === 10 && /^[6-9]/.test(digits)) {
+                        cfPhone.setCustomValidity('');
+                    } else {
+                        cfPhone.setCustomValidity('Enter a valid 10-digit Indian mobile number');
+                    }
+                });
+            }
             if (cform) {
                 cform.addEventListener('submit', function (e) {
                     e.preventDefault();
